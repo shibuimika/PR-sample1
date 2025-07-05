@@ -1,4 +1,3 @@
-import MainLayout from '@/components/layout/MainLayout';
 import ReporterDetail from '@/components/reporters/ReporterDetail';
 
 interface ReporterDetailPageProps {
@@ -8,9 +7,5 @@ interface ReporterDetailPageProps {
 export default async function ReporterDetailPage({ params }: ReporterDetailPageProps) {
   const { id } = await params;
   
-  return (
-    <MainLayout>
-      <ReporterDetail reporterId={id} />
-    </MainLayout>
-  );
+  return <ReporterDetail reporterId={id} />;
 } 

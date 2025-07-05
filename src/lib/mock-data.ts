@@ -1,4 +1,4 @@
-import { Reporter, Article, ContactHistory, Theme, Event } from './schemas';
+import { Reporter, Article, ContactHistory, Theme, Event, EventParticipant } from './schemas';
 
 // モック記者データ
 export const mockReporters: Reporter[] = [
@@ -164,6 +164,9 @@ export const mockEvents: Event[] = [
     attendees: ['reporter-1', 'reporter-2'],
     tags: ['AI', 'テクノロジー', 'カンファレンス'],
     status: 'completed',
+    type: 'conference',
+    participantCount: 2,
+    exposureCount: 3,
     createdAt: new Date('2024-06-01'),
     updatedAt: new Date('2024-08-20'),
   },
@@ -176,6 +179,9 @@ export const mockEvents: Event[] = [
     attendees: ['reporter-1'],
     tags: ['フィンテック', '金融', '勉強会'],
     status: 'completed',
+    type: 'seminar',
+    participantCount: 1,
+    exposureCount: 1,
     createdAt: new Date('2024-07-01'),
     updatedAt: new Date('2024-09-15'),
   },
@@ -188,8 +194,50 @@ export const mockEvents: Event[] = [
     attendees: ['reporter-3'],
     tags: ['サステナビリティ', '経営', 'セミナー'],
     status: 'planned',
+    type: 'seminar',
+    participantCount: 1,
+    exposureCount: 0,
     createdAt: new Date('2024-08-01'),
     updatedAt: new Date('2024-08-01'),
+  },
+];
+
+// モックイベント参加者データ
+export const mockEventParticipants: EventParticipant[] = [
+  {
+    id: 'participant-1',
+    eventId: 'event-1',
+    reporterId: 'reporter-1',
+    exposureStatus: 'published',
+    articleUrl: 'https://nikkei.com/ai-summit-2024',
+    notes: 'AI技術の最新動向について詳細な記事を執筆',
+    createdAt: new Date('2024-08-16'),
+  },
+  {
+    id: 'participant-2',
+    eventId: 'event-1',
+    reporterId: 'reporter-2',
+    exposureStatus: 'published',
+    articleUrl: 'https://techcrunch.jp/ai-summit-report',
+    notes: 'スタートアップ企業のAI活用事例を中心にレポート',
+    createdAt: new Date('2024-08-16'),
+  },
+  {
+    id: 'participant-3',
+    eventId: 'event-2',
+    reporterId: 'reporter-1',
+    exposureStatus: 'published',
+    articleUrl: 'https://nikkei.com/fintech-study-session',
+    notes: 'フィンテック業界の最新トレンドについて分析記事を掲載',
+    createdAt: new Date('2024-09-11'),
+  },
+  {
+    id: 'participant-4',
+    eventId: 'event-3',
+    reporterId: 'reporter-3',
+    exposureStatus: 'pending',
+    notes: 'サステナビリティ経営の記事執筆予定',
+    createdAt: new Date('2024-10-06'),
   },
 ];
 
@@ -233,6 +281,19 @@ export const mockApi = {
   getEvents: async () => {
     await new Promise(resolve => setTimeout(resolve, 300));
     return mockEvents;
+  },
+
+  getEvent: async (id: string) => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return mockEvents.find(e => e.id === id);
+  },
+
+  // イベント参加者データ
+  getEventParticipants: async (eventId?: string) => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return eventId 
+      ? mockEventParticipants.filter(p => p.eventId === eventId)
+      : mockEventParticipants;
   },
 
   // 記者マッチング（モック）

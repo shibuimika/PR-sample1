@@ -64,8 +64,22 @@ export const EventSchema = z.object({
   attendees: z.array(z.string().uuid()).default([]),
   tags: z.array(z.string()).default([]),
   status: z.enum(['planned', 'ongoing', 'completed', 'cancelled']).default('planned'),
+  type: z.enum(['conference', 'seminar', 'workshop', 'press_event', 'other']).default('other'),
+  participantCount: z.number().min(0).default(0),
+  exposureCount: z.number().min(0).default(0),
   createdAt: z.date(),
   updatedAt: z.date(),
+});
+
+// イベント参加者スキーマ
+export const EventParticipantSchema = z.object({
+  id: z.string().uuid(),
+  eventId: z.string().uuid(),
+  reporterId: z.string().uuid(),
+  exposureStatus: z.enum(['published', 'planned', 'declined', 'pending']).default('pending'),
+  articleUrl: z.string().url().optional(),
+  notes: z.string().optional(),
+  createdAt: z.date(),
 });
 
 // マッチング結果スキーマ
@@ -107,6 +121,7 @@ export type Article = z.infer<typeof ArticleSchema>;
 export type ContactHistory = z.infer<typeof ContactHistorySchema>;
 export type Theme = z.infer<typeof ThemeSchema>;
 export type Event = z.infer<typeof EventSchema>;
+export type EventParticipant = z.infer<typeof EventParticipantSchema>;
 export type MatchResult = z.infer<typeof MatchResultSchema>;
 export type FileUpload = z.infer<typeof FileUploadSchema>;
 export type MessageGeneration = z.infer<typeof MessageGenerationSchema>;
@@ -142,9 +157,15 @@ export const CreateEventSchema = EventSchema.omit({
   updatedAt: true 
 });
 
+export const CreateEventParticipantSchema = EventParticipantSchema.omit({ 
+  id: true, 
+  createdAt: true 
+});
+
 export type CreateReporter = z.infer<typeof CreateReporterSchema>;
 export type UpdateReporter = z.infer<typeof UpdateReporterSchema>;
 export type CreateArticle = z.infer<typeof CreateArticleSchema>;
 export type CreateContactHistory = z.infer<typeof CreateContactHistorySchema>;
 export type CreateTheme = z.infer<typeof CreateThemeSchema>;
-export type CreateEvent = z.infer<typeof CreateEventSchema>; 
+export type CreateEvent = z.infer<typeof CreateEventSchema>;
+export type CreateEventParticipant = z.infer<typeof CreateEventParticipantSchema>; 

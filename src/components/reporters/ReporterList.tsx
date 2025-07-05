@@ -246,9 +246,6 @@ export default function ReporterList() {
                     )}
                   </button>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  アクション
-                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -262,7 +259,12 @@ export default function ReporterList() {
                         </div>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{reporter.name}</div>
+                        <Link 
+                          href={`/reporters/${reporter.id}`}
+                          className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          {reporter.name}
+                        </Link>
                       </div>
                     </div>
                   </td>
@@ -287,14 +289,6 @@ export default function ReporterList() {
                         {reporter.articleCount} 件
                       </span>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Link
-                      href={`/reporters/${reporter.id}`}
-                      className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      詳細
-                    </Link>
                   </td>
                 </tr>
               ))}

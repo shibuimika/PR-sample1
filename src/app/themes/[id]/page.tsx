@@ -5,6 +5,7 @@ interface ThemeDetailPageProps {
   params: {
     id: string;
   };
+  searchParams?: Record<string, string | string[] | undefined>;
 }
 
 export default function ThemeDetailPage({ params }: ThemeDetailPageProps) {

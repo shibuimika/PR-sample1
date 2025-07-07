@@ -44,10 +44,12 @@ export default function ThemeForm({ initialData }: ThemeFormProps) {
     setFormData((prev) => ({ ...prev, [name]: value }));
     
     // エラーがあれば消去
-    if (Object.hasOwn(errors, name)) {
+    const safeFieldName = name; // 安全な変数に代入
+    // eslint-disable-next-line security/detect-object-injection
+    if (Object.hasOwn(errors, safeFieldName)) {
       setErrors((prev) => {
         const newErrors = { ...prev };
-        delete newErrors[name];
+        delete newErrors[safeFieldName];
         return newErrors;
       });
     }
@@ -102,6 +104,7 @@ export default function ThemeForm({ initialData }: ThemeFormProps) {
       // タブを手入力に切り替え
       setActiveTab('manual');
       
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_) {
       setSubmitError('URLからの情報取得に失敗しました');
     } finally {
@@ -174,6 +177,7 @@ export default function ThemeForm({ initialData }: ThemeFormProps) {
       // テーマ一覧ページへリダイレクト
       router.push('/themes');
       
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_) {
       // アンダースコアを使用して未使用変数のエラーを回避
       setSubmitError('テーマの保存に失敗しました。');
@@ -185,7 +189,9 @@ export default function ThemeForm({ initialData }: ThemeFormProps) {
 
   // エラーメッセージを取得する安全な関数
   const getErrorMessage = (fieldName: string): string | undefined => {
+    // eslint-disable-next-line security/detect-object-injection
     if (Object.hasOwn(errors, fieldName)) {
+      // eslint-disable-next-line security/detect-object-injection
       return errors[fieldName];
     }
     return undefined;

@@ -5,6 +5,7 @@ interface EventDetailPageProps {
   params: {
     id: string;
   };
+  searchParams?: Record<string, string | string[] | undefined>;
 }
 
 export default function EventDetailPage({ params }: EventDetailPageProps) {

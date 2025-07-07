@@ -44,7 +44,7 @@ export default function ThemeForm({ initialData }: ThemeFormProps) {
     setFormData((prev) => ({ ...prev, [name]: value }));
     
     // エラーがあれば消去
-    if (errors[name]) {
+    if (Object.hasOwn(errors, name)) {
       setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
@@ -102,7 +102,7 @@ export default function ThemeForm({ initialData }: ThemeFormProps) {
       // タブを手入力に切り替え
       setActiveTab('manual');
       
-    } catch (error) {
+    } catch (_) {
       setSubmitError('URLからの情報取得に失敗しました');
     } finally {
       setIsSubmitting(false);
@@ -174,12 +174,21 @@ export default function ThemeForm({ initialData }: ThemeFormProps) {
       // テーマ一覧ページへリダイレクト
       router.push('/themes');
       
-    } catch (error) {
-      console.error('テーマの保存に失敗しました:', error);
+    } catch (_) {
+      // アンダースコアを使用して未使用変数のエラーを回避
       setSubmitError('テーマの保存に失敗しました。');
+      console.error('テーマの保存に失敗しました');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // エラーメッセージを取得する安全な関数
+  const getErrorMessage = (fieldName: string): string | undefined => {
+    if (Object.hasOwn(errors, fieldName)) {
+      return errors[fieldName];
+    }
+    return undefined;
   };
 
   return (
@@ -236,12 +245,12 @@ export default function ThemeForm({ initialData }: ThemeFormProps) {
                   value={formData.title}
                   onChange={handleChange}
                   className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                    errors.title ? 'border-red-300' : ''
+                    getErrorMessage('title') ? 'border-red-300' : ''
                   }`}
                   placeholder="テーマのタイトルを入力"
                 />
-                {errors.title && (
-                  <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                {getErrorMessage('title') && (
+                  <p className="mt-1 text-sm text-red-600">{getErrorMessage('title')}</p>
                 )}
               </div>
 
@@ -256,12 +265,12 @@ export default function ThemeForm({ initialData }: ThemeFormProps) {
                   value={formData.description}
                   onChange={handleChange}
                   className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                    errors.description ? 'border-red-300' : ''
+                    getErrorMessage('description') ? 'border-red-300' : ''
                   }`}
                   placeholder="テーマの詳細な説明を入力"
                 />
-                {errors.description && (
-                  <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+                {getErrorMessage('description') && (
+                  <p className="mt-1 text-sm text-red-600">{getErrorMessage('description')}</p>
                 )}
               </div>
 

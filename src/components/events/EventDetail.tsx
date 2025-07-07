@@ -24,20 +24,21 @@ export default function EventDetail({ eventId }: EventDetailProps) {
         setError(null);
 
         // イベント詳細取得
-        const eventData = await mockApi.getEvent(eventId);
+        const eventData = await mockApi.getEventById(eventId);
         if (!eventData) {
           setError('イベントが見つかりません');
           return;
         }
         setEvent(eventData);
 
-        // イベント参加者取得
-        const participantsData = await mockApi.getEventParticipants(eventId);
-        setParticipants(participantsData);
-
         // 記者データ取得
         const reportersData = await mockApi.getReporters();
         setReporters(reportersData);
+        
+        // モックデータから該当イベントの参加者を取得
+        // mockApi.getEventParticipantsが実装されていないため、仮の実装
+        const mockEventParticipants = await mockApi.getEventParticipantsByEventId(eventId);
+        setParticipants(mockEventParticipants);
       } catch (err) {
         console.error('イベントデータの取得に失敗しました:', err);
         setError('イベントデータの取得に失敗しました');

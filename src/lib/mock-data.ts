@@ -250,9 +250,29 @@ export const mockApi = {
     return mockReporters;
   },
 
-  getReporter: async (id: string) => {
+  getReporterById: async (id: string) => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return mockReporters.find(r => r.id === id);
+    const reporter = mockReporters.find(r => r.id === id);
+    if (!reporter) throw new Error('Reporter not found');
+    return reporter;
+  },
+
+  createReporter: async (reporter: Reporter) => {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    console.log('Creating reporter:', reporter);
+    return { success: true, id: reporter.id };
+  },
+
+  updateReporter: async (id: string, data: Partial<Reporter>) => {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    console.log('Updating reporter:', id, data);
+    return { success: true };
+  },
+
+  deleteReporter: async (id: string) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    console.log('Deleting reporter:', id);
+    return { success: true };
   },
 
   // 記事データ
@@ -273,19 +293,64 @@ export const mockApi = {
 
   // テーマデータ
   getThemes: async () => {
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 500));
     return mockThemes;
+  },
+
+  getThemeById: async (id: string) => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const theme = mockThemes.find(t => t.id === id);
+    if (!theme) throw new Error('Theme not found');
+    return theme;
+  },
+
+  createTheme: async (theme: Theme) => {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    console.log('Creating theme:', theme);
+    return { success: true, id: theme.id };
+  },
+
+  updateTheme: async (id: string, data: Partial<Theme>) => {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    console.log('Updating theme:', id, data);
+    return { success: true };
+  },
+
+  deleteTheme: async (id: string) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    console.log('Deleting theme:', id);
+    return { success: true };
   },
 
   // イベントデータ
   getEvents: async () => {
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     return mockEvents;
   },
 
-  getEvent: async (id: string) => {
+  getEventById: async (id: string) => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return mockEvents.find(e => e.id === id);
+    const event = mockEvents.find(e => e.id === id);
+    if (!event) throw new Error('Event not found');
+    return event;
+  },
+
+  createEvent: async (event: Event) => {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    console.log('Creating event:', event);
+    return { success: true, id: event.id };
+  },
+
+  updateEvent: async (id: string, data: Partial<Event>) => {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    console.log('Updating event:', id, data);
+    return { success: true };
+  },
+
+  deleteEvent: async (id: string) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    console.log('Deleting event:', id);
+    return { success: true };
   },
 
   // イベント参加者データ
@@ -294,6 +359,11 @@ export const mockApi = {
     return eventId 
       ? mockEventParticipants.filter(p => p.eventId === eventId)
       : mockEventParticipants;
+  },
+
+  getEventParticipantsByEventId: async (eventId: string) => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return mockEventParticipants.filter(p => p.eventId === eventId);
   },
 
   // 記者マッチング（モック）

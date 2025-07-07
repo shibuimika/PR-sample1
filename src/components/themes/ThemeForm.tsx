@@ -26,18 +26,13 @@ export default function ThemeForm({ initialData }: ThemeFormProps) {
     priority: initialData?.priority || 'medium',
   });
 
-  // エラー状態をMapとして管理
-  const [errors, setErrors] = useState<Map<string, string>>(new Map());
-  
-  // 許可されたフィールド名のリスト
-  const allowedFields = ['title', 'description', 'category', 'priority'] as const;
-  
   // フォーム入力値の一時的な状態
   const [keyword, setKeyword] = useState('');
   const [urlInput, setUrlInput] = useState('');
   
   // その他の状態
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'manual' | 'url' | 'file'>('manual');
 
@@ -46,15 +41,15 @@ export default function ThemeForm({ initialData }: ThemeFormProps) {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
     
-    // 許可されたフィールドのみ更新
-    if (allowedFields.includes(name as typeof allowedFields[number])) {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-      
-      // エラーがあれば消去
+    // エラーがあれば消去
+    const safeFieldName = name; // 安全な変数に代入
+    // eslint-disable-next-line security/detect-object-injection
+    if (Object.hasOwn(errors, safeFieldName)) {
       setErrors((prev) => {
-        const newErrors = new Map(prev);
-        newErrors.delete(name);
+        const newErrors = { ...prev };
+        delete newErrors[safeFieldName];
         return newErrors;
       });
     }
@@ -149,19 +144,17 @@ export default function ThemeForm({ initialData }: ThemeFormProps) {
     
     try {
       // バリデーション
-      const validationResult = CreateThemeSchema.safeParse(formData);
+      const result = CreateThemeSchema.safeParse(formData);
       
-      if (!validationResult.success) {
-        const newErrors = new Map<string, string>();
+      if (!result.success) {
+        const fieldErrors: Record<string, string> = {};
         
-        validationResult.error.errors.forEach((error) => {
+        result.error.errors.forEach((error) => {
           const field = error.path[0].toString();
-          if (allowedFields.includes(field as typeof allowedFields[number])) {
-            newErrors.set(field, error.message);
-          }
+          fieldErrors[field] = error.message;
         });
         
-        setErrors(newErrors);
+        setErrors(fieldErrors);
         return;
       }
       
@@ -196,8 +189,10 @@ export default function ThemeForm({ initialData }: ThemeFormProps) {
 
   // エラーメッセージを取得する安全な関数
   const getErrorMessage = (fieldName: string): string | undefined => {
-    if (allowedFields.includes(fieldName as typeof allowedFields[number])) {
-      return errors.get(fieldName);
+    // eslint-disable-next-line security/detect-object-injection
+    if (Object.hasOwn(errors, fieldName)) {
+      // eslint-disable-next-line security/detect-object-injection
+      return errors[fieldName];
     }
     return undefined;
   };

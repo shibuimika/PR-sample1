@@ -1,4 +1,4 @@
-import { Reporter, Article, ContactHistory, Theme, Event, EventParticipant } from './schemas';
+import { Reporter, Article, ContactHistory, Event, EventParticipant } from './schemas';
 
 // モック記者データ
 export const mockReporters: Reporter[] = [
@@ -120,13 +120,64 @@ export const mockContactHistory: ContactHistory[] = [
 ];
 
 // テーマ型定義（新規作成用）
-export type Theme = {
+export type NewTheme = {
   id: string;
-  name: string;
+  title: string;
   description: string;
   url?: string;
   fileUrl?: string;
 };
+
+// 社内PR担当者型定義
+export type InternalPRStaff = {
+  id: string;
+  name: string;
+  department: string;
+  position: string;
+  email: string;
+  phone: string;
+  expertise: string[];
+};
+
+// 社内PR担当者データ
+export const mockInternalPRStaff: InternalPRStaff[] = [
+  {
+    id: 'staff-1',
+    name: '山田 健太',
+    department: '広報部',
+    position: '広報マネージャー',
+    email: 'k.yamada@company.com',
+    phone: '03-1234-5678',
+    expertise: ['テクノロジー', 'AI', 'DX'],
+  },
+  {
+    id: 'staff-2',
+    name: '佐々木 美咲',
+    department: '広報部',
+    position: '広報スペシャリスト',
+    email: 'm.sasaki@company.com',
+    phone: '03-1234-5679',
+    expertise: ['ビジネス', '経営戦略', 'サステナビリティ'],
+  },
+  {
+    id: 'staff-3',
+    name: '田村 誠',
+    department: '技術広報部',
+    position: 'テクニカル広報',
+    email: 'm.tamura@company.com',
+    phone: '03-1234-5680',
+    expertise: ['AI', '技術開発', 'エンジニアリング'],
+  },
+  {
+    id: 'staff-4',
+    name: '高橋 遥',
+    department: '広報部',
+    position: '広報アシスタント',
+    email: 'h.takahashi@company.com',
+    phone: '03-1234-5681',
+    expertise: ['メディア対応', 'イベント企画'],
+  },
+];
 
 // 既存テーマ型定義（一覧表示用）
 export type LegacyTheme = {
@@ -141,10 +192,10 @@ export type LegacyTheme = {
 };
 
 // 統合テーマ型（詳細ページで使用）
-export type CombinedTheme = Theme | (LegacyTheme & { isLegacy: true });
+export type CombinedTheme = NewTheme | (LegacyTheme & { isLegacy: true });
 
 // 新規作成テーマデータ配列
-let themes: Theme[] = [];
+let themes: NewTheme[] = [];
 
 // 既存のモックテーマデータ（一覧表示用）
 export const mockThemes: LegacyTheme[] = [
@@ -181,7 +232,7 @@ export const mockThemes: LegacyTheme[] = [
 ];
 
 // 新規テーマ追加関数
-export function addTheme(theme: Theme) {
+export function addTheme(theme: NewTheme) {
   themes.push(theme);
 }
 
@@ -204,7 +255,7 @@ export function getAllLegacyThemes(): LegacyTheme[] {
 }
 
 // 新規作成テーマのみ取得
-export function getAllThemes(): Theme[] {
+export function getAllThemes(): NewTheme[] {
   return themes;
 }
 
@@ -359,13 +410,13 @@ export const mockApi = {
     return theme;
   },
 
-  createTheme: async (theme: Theme) => {
+  createTheme: async (theme: NewTheme) => {
     await new Promise(resolve => setTimeout(resolve, 800));
     console.log('Creating theme:', theme);
     return { success: true, id: theme.id };
   },
 
-  updateTheme: async (id: string, data: Partial<Theme>) => {
+  updateTheme: async (id: string, data: Partial<NewTheme>) => {
     await new Promise(resolve => setTimeout(resolve, 800));
     console.log('Updating theme:', id, data);
     return { success: true };

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Calendar, User, FileText, ExternalLink, Edit, ArrowLeft, Users, Target, MessageSquare, History } from 'lucide-react';
-import { CombinedTheme, getThemeById, mockReporters } from '../../lib/mock-data';
+import { CombinedTheme, getThemeById, mockInternalPRStaff } from '../../lib/mock-data';
 
 type Props = { id: string };
 type TabType = 'overview' | 'contacts' | 'history' | 'analysis';
@@ -11,7 +11,7 @@ type TabType = 'overview' | 'contacts' | 'history' | 'analysis';
 const ThemeDetail: React.FC<Props> = ({ id }) => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [notes, setNotes] = useState('このテーマに関する取材のメモやアイデアをここに記録してください。');
-  const [assignedReporter, setAssignedReporter] = useState('reporter-1');
+  const [assignedStaff, setAssignedStaff] = useState('staff-1');
 
   const theme: CombinedTheme | undefined = getThemeById(id);
   if (!theme) {
@@ -44,7 +44,7 @@ const ThemeDetail: React.FC<Props> = ({ id }) => {
   ];
 
   const getThemeTitle = () => {
-    return isLegacyTheme ? (theme as any).title : (theme as any).name;
+    return isLegacyTheme ? (theme as any).title : (theme as any).title;
   };
 
   const getThemeDescription = () => {
@@ -134,28 +134,34 @@ const ThemeDetail: React.FC<Props> = ({ id }) => {
               </h3>
               <div className="space-y-3">
                 <select
-                  value={assignedReporter}
-                  onChange={(e) => setAssignedReporter(e.target.value)}
+                  value={assignedStaff}
+                  onChange={(e) => setAssignedStaff(e.target.value)}
                   className="w-full py-2 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">担当者を選択してください</option>
-                  {mockReporters.map((reporter) => (
-                    <option key={reporter.id} value={reporter.id}>
-                      {reporter.name} - {reporter.company}
+                  {mockInternalPRStaff.map((staff) => (
+                    <option key={staff.id} value={staff.id}>
+                      {staff.name} - {staff.department} {staff.position}
                     </option>
                   ))}
                 </select>
-                {assignedReporter && (
+                {assignedStaff && (
                   <div className="p-3 bg-blue-50 rounded-lg">
-                    <div className="flex items-center">
+                    <div className="flex items-center mb-2">
                       <User className="h-4 w-4 text-blue-600 mr-2" />
                       <span className="font-medium text-blue-900">
-                        {mockReporters.find(r => r.id === assignedReporter)?.name}
+                        {mockInternalPRStaff.find(s => s.id === assignedStaff)?.name}
                 </span>
                     </div>
-                    <p className="text-sm text-blue-600 mt-1">
-                      {mockReporters.find(r => r.id === assignedReporter)?.company}
-                    </p>
+                    <div className="text-sm text-blue-600 space-y-1">
+                      <div>{mockInternalPRStaff.find(s => s.id === assignedStaff)?.department} - {mockInternalPRStaff.find(s => s.id === assignedStaff)?.position}</div>
+                      <div>📧 {mockInternalPRStaff.find(s => s.id === assignedStaff)?.email}</div>
+                      <div>📞 {mockInternalPRStaff.find(s => s.id === assignedStaff)?.phone}</div>
+                      <div className="mt-2">
+                        <span className="text-xs text-gray-500">専門分野: </span>
+                        {mockInternalPRStaff.find(s => s.id === assignedStaff)?.expertise.join(', ')}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -226,7 +232,7 @@ const ThemeDetail: React.FC<Props> = ({ id }) => {
                 </div>
               )}
         </div>
-
+              
         {/* 右側 1/3 */}
         <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
           {/* タブ */}

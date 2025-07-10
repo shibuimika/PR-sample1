@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { addTheme, Theme } from '../../lib/mock-data';
+import { addTheme, NewTheme } from '../../lib/mock-data';
 import { v4 as uuidv4 } from 'uuid';
 
 const ThemeForm: React.FC = () => {
   const router = useRouter();
-  const [name, setName] = useState('');
+  const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [url, setUrl] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -25,9 +25,9 @@ const ThemeForm: React.FC = () => {
     if (file) {
       fileUrl = URL.createObjectURL(file);
     }
-    const newTheme: Theme = {
+    const newTheme: NewTheme = {
       id: uuidv4(),
-      name,
+      title,
       description,
       url: url || undefined,
       fileUrl: fileUrl || undefined,
@@ -38,15 +38,15 @@ const ThemeForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
+              <div>
         <label>テーマ名</label>
-        <input type="text" value={name} onChange={e => setName(e.target.value)} required className="input input-bordered w-full" />
-      </div>
-      <div>
+        <input type="text" value={title} onChange={e => setTitle(e.target.value)} required className="input input-bordered w-full" />
+              </div>
+              <div>
         <label>説明</label>
         <textarea value={description} onChange={e => setDescription(e.target.value)} required className="textarea textarea-bordered w-full" />
-      </div>
-      <div>
+              </div>
+              <div>
         <label>関連URL</label>
         <input type="url" value={url} onChange={e => setUrl(e.target.value)} className="input input-bordered w-full" />
       </div>

@@ -156,7 +156,7 @@ export class AIService {
   static async analyzeReporter(reporterData: ReporterData) {
     try {
       const response = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -184,7 +184,7 @@ export class AIService {
   static async generatePitchMessage(reporterProfile: ReporterProfile, theme: Theme, tone: string = 'professional') {
     try {
       const response = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -212,7 +212,7 @@ export class AIService {
   static async matchReportersFromContent(extractedText: string, reporters: ReporterData[]) {
     try {
       const response = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',

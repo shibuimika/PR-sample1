@@ -119,8 +119,35 @@ export const mockContactHistory: ContactHistory[] = [
   },
 ];
 
-// モックテーマデータ
-export const mockThemes: Theme[] = [
+// テーマ型定義（新規作成用）
+export type Theme = {
+  id: string;
+  name: string;
+  description: string;
+  url?: string;
+  fileUrl?: string;
+};
+
+// 既存テーマ型定義（一覧表示用）
+export type LegacyTheme = {
+  id: string;
+  title: string;
+  description: string;
+  keywords: string[];
+  category: string;
+  priority: 'high' | 'medium' | 'low';
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+// 統合テーマ型（詳細ページで使用）
+export type CombinedTheme = Theme | (LegacyTheme & { isLegacy: true });
+
+// 新規作成テーマデータ配列
+let themes: Theme[] = [];
+
+// 既存のモックテーマデータ（一覧表示用）
+export const mockThemes: LegacyTheme[] = [
   {
     id: 'theme-1',
     title: 'AI活用による業務効率化',
@@ -152,6 +179,34 @@ export const mockThemes: Theme[] = [
     updatedAt: new Date('2024-04-01'),
   },
 ];
+
+// 新規テーマ追加関数
+export function addTheme(theme: Theme) {
+  themes.push(theme);
+}
+
+// 統合テーマ取得関数（新規作成 + 既存モック）
+export function getThemeById(id: string): CombinedTheme | undefined {
+  // まず新規作成テーマから検索
+  const newTheme = themes.find((t) => t.id === id);
+  if (newTheme) return newTheme;
+  
+  // 次に既存モックテーマから検索
+  const legacyTheme = mockThemes.find((t) => t.id === id);
+  if (legacyTheme) return { ...legacyTheme, isLegacy: true };
+  
+  return undefined;
+}
+
+// 一覧表示用（既存モックテーマのみ）
+export function getAllLegacyThemes(): LegacyTheme[] {
+  return mockThemes;
+}
+
+// 新規作成テーマのみ取得
+export function getAllThemes(): Theme[] {
+  return themes;
+}
 
 // モックイベントデータ
 export const mockEvents: Event[] = [
@@ -294,12 +349,12 @@ export const mockApi = {
   // テーマデータ
   getThemes: async () => {
     await new Promise(resolve => setTimeout(resolve, 500));
-    return mockThemes;
+    return getAllLegacyThemes(); // 一覧では既存モックテーマを返す
   },
 
   getThemeById: async (id: string) => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    const theme = mockThemes.find(t => t.id === id);
+    const theme = getThemeById(id); // 統合テーマを返す
     if (!theme) throw new Error('Theme not found');
     return theme;
   },

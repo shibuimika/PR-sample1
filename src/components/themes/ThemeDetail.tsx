@@ -1,86 +1,31 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { 
-  ArrowLeft, 
-  Edit, 
-  Trash2, 
-  Calendar, 
-  Tag, 
-  FileText,
-  BarChart 
-} from 'lucide-react';
-import { mockApi } from '@/lib/mock-data';
-import { Theme } from '@/lib/schemas';
-import { cn } from '@/lib/utils';
+import { Calendar, User, FileText, ExternalLink, Edit, ArrowLeft, Users, Target, MessageSquare, History } from 'lucide-react';
+import { CombinedTheme, getThemeById, mockReporters } from '../../lib/mock-data';
 
-interface ThemeDetailProps {
-  themeId: string;
-}
+type Props = { id: string };
+type TabType = 'overview' | 'contacts' | 'history' | 'analysis';
 
-export default function ThemeDetail({ themeId }: ThemeDetailProps) {
-  const [theme, setTheme] = useState<Theme | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+const ThemeDetail: React.FC<Props> = ({ id }) => {
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [notes, setNotes] = useState('このテーマに関する取材のメモやアイデアをここに記録してください。');
+  const [assignedReporter, setAssignedReporter] = useState('reporter-1');
 
-  useEffect(() => {
-    const fetchTheme = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await mockApi.getThemeById(themeId);
-        setTheme(data);
-      } catch (error) {
-        console.error('テーマの取得に失敗しました:', error);
-        setError('テーマの取得に失敗しました。');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTheme();
-  }, [themeId]);
-
-  // 日付フォーマット
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  // 優先度に応じた色設定
-  const priorityColor = {
-    high: 'bg-red-100 text-red-800',
-    medium: 'bg-yellow-100 text-yellow-800',
-    low: 'bg-green-100 text-green-800',
-  };
-
-  if (isLoading) {
+  const theme: CombinedTheme | undefined = getThemeById(id);
+  if (!theme) {
     return (
-      <div className="flex justify-center items-center py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
-  if (error || !theme) {
-    return (
-      <div className="text-center py-20">
-        <h3 className="mt-2 text-lg font-medium text-gray-900">
-          {error || 'テーマが見つかりませんでした'}
-        </h3>
-        <p className="mt-1 text-sm text-gray-500">
-          テーマが削除されたか、存在しないIDです。
-        </p>
-        <div className="mt-6">
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">テーマが見つかりません</h2>
+          <p className="text-gray-600 mb-4">指定されたテーマが存在しないか、削除された可能性があります。</p>
           <Link
             href="/themes"
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             テーマ一覧に戻る
           </Link>
         </div>
@@ -88,164 +33,313 @@ export default function ThemeDetail({ themeId }: ThemeDetailProps) {
     );
   }
 
+  // 既存テーマか新規作成テーマかを判定
+  const isLegacyTheme = 'isLegacy' in theme;
+
+  const tabs = [
+    { id: 'overview' as TabType, label: '概要', icon: Target },
+    { id: 'contacts' as TabType, label: '関連記者', icon: Users },
+    { id: 'history' as TabType, label: '活動履歴', icon: History },
+    { id: 'analysis' as TabType, label: '分析', icon: MessageSquare },
+  ];
+
+  const getThemeTitle = () => {
+    return isLegacyTheme ? (theme as any).title : (theme as any).name;
+  };
+
+  const getThemeDescription = () => {
+    return theme.description;
+  };
+
+  const getCreatedDate = () => {
+    return isLegacyTheme ? (theme as any).createdAt : new Date();
+  };
+
+  const getPriorityColor = (priority: string) => {
+    const colors = {
+      'high': 'bg-red-100 text-red-800',
+      'medium': 'bg-yellow-100 text-yellow-800',
+      'low': 'bg-green-100 text-green-800',
+    };
+    return colors[priority as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+  };
+
   return (
-    <div className="space-y-8">
-      {/* ヘッダー */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+    <div className="min-h-screen bg-gray-50">
+      {/* パンくずナビ */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <nav className="flex" aria-label="Breadcrumb">
+          <ol className="inline-flex items-center space-x-1 md:space-x-3">
+            <li className="inline-flex items-center">
+              <Link href="/themes" className="text-gray-700 hover:text-gray-900">
+                テーマ一覧
+              </Link>
+            </li>
+            <li>
         <div className="flex items-center">
-          <Link
-            href="/themes"
-            className="mr-4 p-2 rounded-full hover:bg-gray-100"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <h1 className="text-2xl font-bold tracking-tight">{theme.title}</h1>
+                <span className="ml-1 text-gray-400 md:ml-2">/</span>
+                <span className="ml-1 text-gray-500 md:ml-2">{getThemeTitle()}</span>
+              </div>
+            </li>
+          </ol>
+        </nav>
         </div>
         
-        <div className="flex space-x-3">
-          <Link
-            href={`/themes/${theme.id}/edit`}
-            className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <Edit className="w-4 h-4 mr-2" />
-            編集
-          </Link>
-          <button
-            className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            削除
+      {/* メインレイアウト */}
+      <div className="flex h-screen">
+        {/* 左側 2/3 */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* ヘッダー部分 */}
+          <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <div className="flex items-center space-x-4 mb-2">
+                  <h1 className="text-3xl font-bold text-gray-900">{getThemeTitle()}</h1>
+                  {isLegacyTheme && (
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor((theme as any).priority)}`}>
+                      優先度: {(theme as any).priority === 'high' ? '高' : (theme as any).priority === 'medium' ? '中' : '低'}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center text-sm text-gray-500 space-x-4">
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    作成日: {getCreatedDate().toLocaleDateString('ja-JP')}
+                  </div>
+                  {isLegacyTheme && (
+                    <div className="flex items-center">
+                      <FileText className="h-4 w-4 mr-2" />
+                      カテゴリ: {(theme as any).category}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex space-x-2">
+                <button className="inline-flex items-center px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                  <Edit className="h-4 w-4 mr-2" />
+                  編集
           </button>
         </div>
       </div>
+            <p className="text-gray-600 text-lg leading-relaxed">{getThemeDescription()}</p>
+          </div>
 
-      {/* メインコンテンツ */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 左側：テーマ情報 */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* 基本情報 */}
-          <div className="bg-white p-6 shadow rounded-lg">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">テーマ情報</h2>
-            
-            <div className="space-y-4">
-              {/* 優先度バッジとカテゴリ */}
-              <div className="flex flex-wrap items-center gap-3">
-                <span 
-                  className={cn(
-                    "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                    priorityColor[theme.priority]
-                  )}
+          {/* 取材対応者・参照元情報 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* 取材対応者 */}
+            <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <User className="h-5 w-5 mr-2" />
+                取材対応者
+              </h3>
+              <div className="space-y-3">
+                <select
+                  value={assignedReporter}
+                  onChange={(e) => setAssignedReporter(e.target.value)}
+                  className="w-full py-2 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  {theme.priority === 'high' ? '優先度：高' : 
-                   theme.priority === 'medium' ? '優先度：中' : '優先度：低'}
+                  <option value="">担当者を選択してください</option>
+                  {mockReporters.map((reporter) => (
+                    <option key={reporter.id} value={reporter.id}>
+                      {reporter.name} - {reporter.company}
+                    </option>
+                  ))}
+                </select>
+                {assignedReporter && (
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <div className="flex items-center">
+                      <User className="h-4 w-4 text-blue-600 mr-2" />
+                      <span className="font-medium text-blue-900">
+                        {mockReporters.find(r => r.id === assignedReporter)?.name}
                 </span>
-                
-                {theme.category && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-800 text-xs font-medium">
-                    <FileText className="w-3 h-3 mr-1" />
-                    {theme.category}
-                  </span>
+                    </div>
+                    <p className="text-sm text-blue-600 mt-1">
+                      {mockReporters.find(r => r.id === assignedReporter)?.company}
+                    </p>
+                  </div>
                 )}
               </div>
+              </div>
               
-              {/* 説明文 */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">説明</h3>
-                <div className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
-                  {theme.description}
+            {/* 参照元ファイル・URL */}
+            <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <ExternalLink className="h-5 w-5 mr-2" />
+                参照元
+              </h3>
+              <div className="space-y-3">
+                {!isLegacyTheme && (theme as any).url && (
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium text-gray-700">関連URL</span>
+                      <ExternalLink className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <a
+                      href={(theme as any).url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 text-sm break-all"
+                    >
+                      {(theme as any).url}
+                    </a>
+                  </div>
+                )}
+                {!isLegacyTheme && (theme as any).fileUrl && (
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium text-gray-700">アップロードファイル</span>
+                      <FileText className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <a
+                      href={(theme as any).fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      ファイルを開く
+                    </a>
+                  </div>
+                )}
+                {isLegacyTheme && (
+                  <div className="text-sm text-gray-500 text-center py-4">
+                    参照元ファイルやURLはありません
+                  </div>
+                )}
+              </div>
                 </div>
               </div>
               
-              {/* キーワード */}
-              {theme.keywords.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">キーワード</h3>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {theme.keywords.map((keyword, index) => (
+          {/* キーワード（既存テーマのみ） */}
+          {isLegacyTheme && (
+            <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">キーワード</h3>
+              <div className="flex flex-wrap gap-2">
+                {(theme as any).keywords.map((keyword: string, index: number) => (
                       <span 
                         key={index} 
-                        className="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs"
+                    className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium"
                       >
-                        <Tag className="w-3 h-3 mr-1" />
                         {keyword}
                       </span>
                     ))}
                   </div>
                 </div>
               )}
-              
-              {/* 作成・更新日 */}
-              <div className="border-t pt-4 mt-4 grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-500">作成日: </span>
-                  <span className="text-gray-900">
-                    {formatDate(theme.createdAt)}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-500">最終更新日: </span>
-                  <span className="text-gray-900">
-                    {formatDate(theme.updatedAt)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 関連コンテンツ（仮） */}
-          <div className="bg-white p-6 shadow rounded-lg">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">関連コンテンツ</h2>
-            <p className="text-sm text-gray-500">
-              このテーマに関連するコンテンツはまだありません。
-            </p>
-          </div>
         </div>
 
-        {/* 右側：サイドバー */}
-        <div className="space-y-6">
-          {/* 統計情報（仮） */}
-          <div className="bg-white p-6 shadow rounded-lg">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">統計情報</h2>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between py-2">
-                <div className="flex items-center">
-                  <BarChart className="w-4 h-4 text-gray-400 mr-2" />
-                  <span className="text-sm text-gray-500">マッチした記者</span>
-                </div>
-                <span className="text-sm font-medium">0人</span>
-              </div>
-              
-              <div className="flex items-center justify-between py-2">
-                <div className="flex items-center">
-                  <Calendar className="w-4 h-4 text-gray-400 mr-2" />
-                  <span className="text-sm text-gray-500">関連イベント</span>
-                </div>
-                <span className="text-sm font-medium">0件</span>
-              </div>
-            </div>
+        {/* 右側 1/3 */}
+        <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
+          {/* タブ */}
+          <div className="border-b border-gray-200">
+            <nav className="flex" aria-label="Tabs">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex-1 flex flex-col items-center px-3 py-4 text-xs font-medium hover:bg-gray-50 focus:z-10 ${
+                    activeTab === tab.id
+                      ? 'text-blue-600 border-b-2 border-blue-500 bg-blue-50'
+                      : 'text-gray-500 border-b-2 border-transparent'
+                  }`}
+                >
+                  <tab.icon className="h-4 w-4 mb-1" />
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </nav>
           </div>
 
-          {/* アクション */}
-          <div className="bg-white p-6 shadow rounded-lg">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">アクション</h2>
-            <div className="space-y-3">
-              <Link
-                href={`/matching?themeId=${theme.id}`}
-                className="block w-full text-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                マッチング記者を検索
-              </Link>
-              
-              <Link
-                href={`/messages?themeId=${theme.id}`}
-                className="block w-full text-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                メッセージを作成
-              </Link>
+          {/* タブコンテンツ */}
+          <div className="flex-1 p-4 overflow-y-auto">
+            {activeTab === 'overview' && (
+              <div className="space-y-4">
+                <h4 className="font-semibold text-gray-900">概要情報</h4>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">ステータス:</span>
+                    <span className="text-green-600 font-medium">アクティブ</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">関連記者:</span>
+                    <span className="font-medium">3名</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">活動履歴:</span>
+                    <span className="font-medium">5件</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {activeTab === 'contacts' && (
+              <div className="space-y-4">
+                <h4 className="font-semibold text-gray-900">関連記者</h4>
+                <div className="space-y-2">
+                  <div className="p-2 bg-gray-50 rounded text-sm">
+                    <div className="font-medium">田中 太郎</div>
+                    <div className="text-gray-500 text-xs">日経新聞</div>
+                  </div>
+                  <div className="p-2 bg-gray-50 rounded text-sm">
+                    <div className="font-medium">佐藤 花子</div>
+                    <div className="text-gray-500 text-xs">TechCrunch Japan</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {activeTab === 'history' && (
+              <div className="space-y-4">
+                <h4 className="font-semibold text-gray-900">活動履歴</h4>
+                <div className="space-y-2">
+                  <div className="p-2 border-l-2 border-blue-500 bg-blue-50 text-sm">
+                    <div className="font-medium">2024/12/20</div>
+                    <div className="text-gray-600 text-xs">テーマ作成</div>
+            </div>
+                  <div className="p-2 border-l-2 border-green-500 bg-green-50 text-sm">
+                    <div className="font-medium">2024/12/19</div>
+                    <div className="text-gray-600 text-xs">記者への連絡</div>
+        </div>
+                </div>
+              </div>
+            )}
+            {activeTab === 'analysis' && (
+              <div className="space-y-4">
+                <h4 className="font-semibold text-gray-900">分析データ</h4>
+                <div className="space-y-3">
+                  <div className="p-3 bg-gray-50 rounded text-center">
+                    <div className="text-xs font-medium text-gray-700">注目度スコア</div>
+                    <div className="text-2xl font-bold text-blue-600">78</div>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded text-center">
+                    <div className="text-xs font-medium text-gray-700">マッチング率</div>
+                    <div className="text-2xl font-bold text-green-600">85%</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* メモ欄 */}
+          <div className="border-t border-gray-200 p-4">
+            <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              メモ
+            </h3>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={8}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-sm"
+              placeholder="テーマに関するメモやアイデアを記録してください..."
+            />
+            <div className="mt-2 flex justify-end">
+              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
+                保存
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-} 
+};
+
+export default ThemeDetail; 

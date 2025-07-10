@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import { User, Mail, Phone, MessageSquare, Edit, Heart, Calendar, ArrowLeft, Star, Target, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-import { mockReporters, mockContactHistory, mockArticles } from '@/lib/mock-data';
+import { mockReporters, mockContactHistory, mockArticles, getAllLegacyThemes, getAllThemes, CombinedTheme } from '@/lib/mock-data';
+import { matchThemesForReporter } from '@/lib/utils';
+import ThemeCard from '@/components/themes/ThemeCard';
 
 interface ReporterDetailProps {
   reporterId: string;
@@ -18,6 +20,15 @@ export default function ReporterDetail({ reporterId }: ReporterDetailProps) {
   const reporter = mockReporters.find(r => r.id === reporterId);
   const contactHistories = mockContactHistory.filter(ch => ch.reporterId === reporterId);
   const articles = mockArticles.filter(a => a.reporterId === reporterId);
+
+  // テーマ一覧（既存＋新規）を取得
+  const allThemes: CombinedTheme[] = [
+    ...getAllLegacyThemes(),
+    ...getAllThemes()
+  ];
+
+  // 親和性の高いテーマを算出
+  const matchedThemes = reporter ? matchThemesForReporter(reporter, allThemes, 3) : [];
 
   if (!reporter) {
     return (
@@ -135,107 +146,17 @@ export default function ReporterDetail({ reporterId }: ReporterDetailProps) {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
                   関心テーマ・マッチング分析
                 </h3>
-                
-                {/* テーマパネル */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {/* 専門分野パネル */}
-                  {reporter.specialties.map((specialty, index) => (
-                    <div key={`specialty-${index}`} className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center">
-                          <Star className="h-5 w-5 text-blue-600 mr-2" />
-                          <h4 className="font-medium text-blue-900">{specialty}</h4>
-                        </div>
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                          専門分野
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-blue-700">マッチング度</span>
-                        <div className="flex items-center">
-                          <div className="w-16 bg-blue-200 rounded-full h-2 mr-2">
-                            <div className="bg-blue-600 h-2 rounded-full" style={{width: '85%'}}></div>
-                          </div>
-                          <span className="text-blue-600 font-medium">85%</span>
-                        </div>
-                      </div>
-                      <p className="text-xs text-blue-600 mt-2">
-                        高い専門性を有する分野
-                      </p>
-                    </div>
-                  ))}
 
-                  {/* 興味関心パネル */}
-                  {reporter.interests.map((interest, index) => (
-                    <div key={`interest-${index}`} className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center">
-                          <Target className="h-5 w-5 text-green-600 mr-2" />
-                          <h4 className="font-medium text-green-900">{interest}</h4>
-                        </div>
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                          興味関心
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-green-700">関心度</span>
-                        <div className="flex items-center">
-                          <div className="w-16 bg-green-200 rounded-full h-2 mr-2">
-                            <div className="bg-green-600 h-2 rounded-full" style={{width: '72%'}}></div>
-                          </div>
-                          <span className="text-green-600 font-medium">72%</span>
-                        </div>
-                      </div>
-                      <p className="text-xs text-green-600 mt-2">
-                        継続的に注目している分野
-                      </p>
-                    </div>
-                  ))}
-
-                  {/* 注目トレンドパネル */}
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center">
-                        <TrendingUp className="h-5 w-5 text-purple-600 mr-2" />
-                        <h4 className="font-medium text-purple-900">注目トレンド</h4>
-                      </div>
-                      <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-                        AI分析
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-purple-700">適合度</span>
-                      <div className="flex items-center">
-                        <div className="w-16 bg-purple-200 rounded-full h-2 mr-2">
-                          <div className="bg-purple-600 h-2 rounded-full" style={{width: '91%'}}></div>
-                        </div>
-                        <span className="text-purple-600 font-medium">91%</span>
-                      </div>
-                    </div>
-                    <p className="text-xs text-purple-600 mt-2">
-                      最新の業界トレンドに敏感
-                    </p>
+                {/* おすすめテーマ一覧（ThemeCardで表示） */}
+                {matchedThemes.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {matchedThemes.map(({ theme }) => (
+                      <ThemeCard key={theme.id} theme={theme} />
+                    ))}
                   </div>
-                </div>
-
-                {/* マッチング推奨アクション */}
-                <div className="mt-6 bg-gray-50 rounded-lg p-4">
-                  <h4 className="font-medium text-gray-900 mb-3">📋 アプローチ推奨事項</h4>
-                  <div className="space-y-2 text-sm text-gray-700">
-                    <div className="flex items-start">
-                      <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                      <span>データと具体的な数値を含めた提案が効果的</span>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="inline-block w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                      <span>最新技術トレンドと関連付けた内容が関心を引く</span>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="inline-block w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                      <span>専門性を活かした深い分析記事のネタ提供が有効</span>
-                    </div>
-                  </div>
-                </div>
+                ) : (
+                  <div className="text-gray-500 text-sm">親和性の高いテーマはありません。</div>
+                )}
               </div>
             </div>
           )}

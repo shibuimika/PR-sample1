@@ -248,3 +248,44 @@ export function extractKeywords(text: string, maxCount: number = 10): string[] {
 export function generateId(): string {
   return crypto.randomUUID();
 } 
+
+// 記者とテーマの親和性スコア計算＆マッチング関数
+import { Reporter } from './schemas';
+import { CombinedTheme, getAllLegacyThemes, getAllThemes } from './mock-data';
+
+/**
+ * 記者とテーマの親和性スコアを計算し、スコア順で返す
+ * @param reporter 記者オブジェクト
+ * @param themes テーマ配列
+ * @param topN 上位N件（デフォルト3件）
+ */
+export function matchThemesForReporter(
+  reporter: Reporter,
+  themes: CombinedTheme[],
+  topN: number = 3
+): { theme: CombinedTheme; score: number }[] {
+  // interests, specialties, keywords, description で一致数を計算
+  return themes
+    .map(theme => {
+      // 新旧テーマでフィールド差異を吸収
+      const keywords = 'keywords' in theme ? theme.keywords : [];
+      const description = theme.description || '';
+      // 記者の関心ワード
+      const interestWords = [
+        ...(reporter.interests || []),
+        ...(reporter.specialties || [])
+      ];
+      // キーワード一致数
+      let score = 0;
+      interestWords.forEach(word => {
+        // キーワード完全一致
+        if (keywords.some(k => k.includes(word) || word.includes(k))) score += 2;
+        // 説明文に部分一致
+        if (description.includes(word)) score += 1;
+      });
+      return { theme, score };
+    })
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, topN);
+} 

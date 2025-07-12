@@ -146,7 +146,7 @@ export default function ReporterDetail({ reporterId }: ReporterDetailProps) {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
                   関心テーマ・マッチング分析
                 </h3>
-
+                
                 {/* おすすめテーマ一覧（ThemeCardで表示） */}
                 {matchedThemes.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
